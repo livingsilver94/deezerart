@@ -15,13 +15,10 @@ class Object:
 
     def __init__(self, **kwargs):
         if len(self.fields) == 0:
-            raise NotImplementedError(type(self).__name__ + ' cannot have an empty field list')
+            raise NotImplementedError(
+                type(self).__name__ + ' cannot have an empty field list')
         for field in self.fields:
             setattr(self, field, kwargs.get(field))
-
-    @classmethod
-    def from_json(cls, json_data: Mapping[str, Any]):
-        return cls(**json_data)
 
     def __eq__(self, other):
         for field in self.fields:
@@ -68,4 +65,8 @@ class Track(Object):
     fields = ['album', 'artist']
 
 
-_available_objects = {c.__name__.lower(): c for c in Object.__subclasses__()}
+available_objects = {c.__name__.lower(): c for c in Object.__subclasses__()}
+
+
+def parse_json(data: Mapping[str, Any]) -> Object:
+    return available_objects[data['type']](**data)
