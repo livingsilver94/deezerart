@@ -1,17 +1,22 @@
 import json
 import unittest
 
+from parameterized import parameterized
 from deezerart.deezer import object as deezerobj
 
 
 class TestJSONParsing(unittest.TestCase):
-    def test_album(self):
-        test_table = [
-            {'json': '{"title": "Good Things", "cover": "https://api.deezer.com/album/54302092/image"}',
-             'expected': deezerobj.Album(title='Good Things', cover='https://api.deezer.com/album/54302092/image')},
-            {'json': '{"title": "Good Things"}',
-             'expected': deezerobj.Album(title='Good Things', cover=None)},
-        ]
-        for test in test_table:
-            json_obj = json.loads(test['json'], object_hook=deezerobj.Album.from_json)
-            self.assertEqual(json_obj, test['expected'])
+    @parameterized.expand([
+        (
+            'all_fields',
+            '{"title": "Good Things", "cover": "https://api.deezer.com/album/54302092/image"}',
+            deezerobj.Album(title='Good Things', cover='https://api.deezer.com/album/54302092/image')
+        ),
+        (
+            'with_none',
+            '{"title": "Good Things"}',
+            deezerobj.Album(title='Good Things', cover=None)
+        )
+    ])
+    def test_album(self, _name, json_doc, expected):
+        self.assertEqual(json.loads(json_doc, object_hook=deezerobj.Album.from_json), expected)
