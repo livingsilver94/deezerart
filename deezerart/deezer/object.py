@@ -15,8 +15,7 @@ class Object:
 
     def __init__(self, **kwargs):
         if len(self.fields) == 0:
-            raise NotImplementedError(
-                type(self).__name__ + ' cannot have an empty field list')
+            raise NotImplementedError(type(self).__name__ + ' cannot have an empty field list')
         for field in self.fields:
             setattr(self, field, kwargs.get(field))
 
