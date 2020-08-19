@@ -1,4 +1,3 @@
-import json
 import unittest
 
 from deezerart.deezer import object as deezerobj
@@ -19,7 +18,7 @@ class TestJSONParsing(unittest.TestCase):
         )
     ])
     def test_album(self, _name, json_doc, expected):
-        self.assertEqual(json.loads(json_doc, object_hook=deezerobj.parse_json), expected)
+        self.assertEqual(deezerobj.parse_json(json_doc), expected)
 
     @parameterized.expand([
         (
@@ -34,7 +33,7 @@ class TestJSONParsing(unittest.TestCase):
         )
     ])
     def test_artist(self, _name, json_doc, expected):
-        self.assertEqual(json.loads(json_doc, object_hook=deezerobj.parse_json), expected)
+        self.assertEqual(deezerobj.parse_json(json_doc), expected)
 
     @parameterized.expand([
         (
@@ -49,4 +48,4 @@ class TestJSONParsing(unittest.TestCase):
         )
     ])
     def test_track(self, _name, json_doc, expected):
-        self.assertEqual(json.loads(json_doc, object_hook=deezerobj.parse_json), expected)
+        self.assertEqual(deezerobj.parse_json(json_doc), expected)

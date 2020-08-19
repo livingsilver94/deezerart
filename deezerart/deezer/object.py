@@ -1,4 +1,5 @@
 import enum
+import json
 from typing import Any, List, Mapping
 
 # This module is a perfect target for dataclasses.
@@ -67,5 +68,8 @@ class Track(Object):
 available_objects = {c.__name__.lower(): c for c in Object.__subclasses__()}
 
 
-def parse_json(data: Mapping[str, Any]) -> Object:
-    return available_objects[data['type']](**data)
+def parse_json(data: str) -> Object:
+    def hook_parser(data: Mapping[str, Any]):
+        return available_objects[data['type']](**data)
+
+    return json.loads(data, object_hook=hook_parser)
