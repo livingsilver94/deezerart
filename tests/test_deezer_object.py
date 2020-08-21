@@ -1,6 +1,6 @@
 import unittest
 
-from deezerart.deezer import object as deezerobj
+from deezerart.deezer import obj
 from parameterized import parameterized
 
 
@@ -9,46 +9,46 @@ class TestJSONParsing(unittest.TestCase):
         (
             'all_fields',
             '{"title": "Good Things", "cover": "https://api.deezer.com/album/54302092/image", "type":"album"}',
-            deezerobj.Album(title='Good Things', cover='https://api.deezer.com/album/54302092/image')
+            obj.Album(title='Good Things', cover='https://api.deezer.com/album/54302092/image')
         ),
         (
             'with_a_none',
             '{"title": "Good Things", "type":"album"}',
-            deezerobj.Album(title='Good Things', cover=None)
+            obj.Album(title='Good Things', cover=None)
         )
     ])
     def test_album(self, _name, json_doc, expected):
-        self.assertEqual(deezerobj.parse_json(json_doc), expected)
+        self.assertEqual(obj.parse_json(json_doc), expected)
 
     @parameterized.expand([
         (
             'all_fields',
             '{"name": "Metallica", "type":"artist"}',
-            deezerobj.Artist(name='Metallica')
+            obj.Artist(name='Metallica')
         ),
         (
             'with_a_none',
             '{"type":"artist"}',
-            deezerobj.Artist(name=None)
+            obj.Artist(name=None)
         )
     ])
     def test_artist(self, _name, json_doc, expected):
-        self.assertEqual(deezerobj.parse_json(json_doc), expected)
+        self.assertEqual(obj.parse_json(json_doc), expected)
 
     @parameterized.expand([
         (
             'all_fields',
             '{"artist":{"name":"Metallica", "type":"artist"},"album":{"title":"Good Things","cover":"https://api.deezer.com/album/54302092/image", "type":"album"}, "type":"track"}',
-            deezerobj.Track(artist=deezerobj.Artist(name='Metallica'), album=deezerobj.Album(title='Good Things', cover='https://api.deezer.com/album/54302092/image'))
+            obj.Track(artist=obj.Artist(name='Metallica'), album=obj.Album(title='Good Things', cover='https://api.deezer.com/album/54302092/image'))
         ),
         (
             'with_a_none',
             '{"album":{"title":"Good Things","cover":"https://api.deezer.com/album/54302092/image", "type":"album"}, "type":"track"}',
-            deezerobj.Track(artist=None, album=deezerobj.Album(title='Good Things', cover='https://api.deezer.com/album/54302092/image'))
+            obj.Track(artist=None, album=obj.Album(title='Good Things', cover='https://api.deezer.com/album/54302092/image'))
         )
     ])
     def test_track(self, _name, json_doc, expected):
-        self.assertEqual(deezerobj.parse_json(json_doc), expected)
+        self.assertEqual(obj.parse_json(json_doc), expected)
 
 
 class TestDictConversion(unittest.TestCase):
@@ -58,7 +58,7 @@ class TestDictConversion(unittest.TestCase):
             'album': {'title': 'Good Things', 'cover': 'http://example.com', 'type': 'album'},
             'type': 'track'
         }
-        expected = deezerobj.Track(artist=deezerobj.Artist(name='Aloe Blacc'),
-                                   album=deezerobj.Album(title='Good Things', cover='http://example.com'))
+        expected = obj.Track(artist=obj.Artist(name='Aloe Blacc'),
+                             album=obj.Album(title='Good Things', cover='http://example.com'))
 
-        self.assertEqual(deezerobj.parse_json(dct), expected)
+        self.assertEqual(obj.parse_json(dct), expected)
