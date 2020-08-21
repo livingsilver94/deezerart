@@ -12,7 +12,7 @@ class Object:
     Base class from Deezer API objects.
     """
 
-    fields: List[str]
+    fields = []  # type: List[str]
 
     def __init__(self, **kwargs):
         if len(self.fields) == 0:
