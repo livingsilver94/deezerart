@@ -1,6 +1,6 @@
 import enum
 import json
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Union
 
 # This module is a perfect target for dataclasses.
 # Picard though supports Python 3.5+, so we cannot
@@ -68,8 +68,23 @@ class Track(Object):
 available_objects = {c.__name__.lower(): c for c in Object.__subclasses__()}
 
 
-def parse_json(data: str) -> Object:
-    def hook_parser(data: Mapping[str, Any]):
-        return available_objects[data['type']](**data)
+def parse_json(data: Union[str, Mapping[str, Any]]) -> Object:
+    if isinstance(data, str):
+        return json.loads(data, object_hook=_dict_to_object)
 
-    return json.loads(data, object_hook=hook_parser)
+    def convert_inner(data: Mapping[str, Any]):
+        """
+        Traverse the dictionaries with post-order
+        algorithm to convert dict objects in Object instances.
+        """
+        for k, v in list(data.items()):
+            if isinstance(v, dict):
+                data[k] = convert_inner(v)
+        return _dict_to_object(data)
+
+    convert_inner(data)
+    return _dict_to_object(data)
+
+
+def _dict_to_object(data: Mapping[str, Any]) -> Object:
+    return available_objects[data['type']](**data)

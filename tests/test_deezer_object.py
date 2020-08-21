@@ -49,3 +49,16 @@ class TestJSONParsing(unittest.TestCase):
     ])
     def test_track(self, _name, json_doc, expected):
         self.assertEqual(deezerobj.parse_json(json_doc), expected)
+
+
+class TestDictConversion(unittest.TestCase):
+    def test_track(self):
+        dct = {
+            'artist': {'name': 'Aloe Blacc', 'type': 'artist'},
+            'album': {'title': 'Good Things', 'cover': 'http://example.com', 'type': 'album'},
+            'type': 'track'
+        }
+        expected = deezerobj.Track(artist=deezerobj.Artist(name='Aloe Blacc'),
+                                   album=deezerobj.Album(title='Good Things', cover='http://example.com'))
+
+        self.assertEqual(deezerobj.parse_json(dct), expected)
