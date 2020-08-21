@@ -15,18 +15,18 @@ T = TypeVar('T', bound=obj.Object)
 Callback = Callable[[Optional[List[T]], QNetworkReply.NetworkError], None]
 
 
-class SearchOptions(NamedTuple):
+class SearchOptions(NamedTuple('SearchOptions', [('artist', str), ('album', str), ('track', str), ('label', str)])):
     """
     Options for the advanced search.
     """
-    artist: str = ''
-    album: str = ''
-    track: str = ''
-    label: str = ''
 
     def __str__(self):
         options = ['{}:"{}"'.format(k, v) for k, v in self._asdict().items() if v]
         return ' '.join(options)
+
+
+# Python 3.5 cannot set defaults values in an othodox way.
+SearchOptions.__new__.__defaults__ = ('',) * len(SearchOptions._fields)
 
 
 class Client:
