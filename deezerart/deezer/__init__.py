@@ -1,1 +1,1 @@
-from deezerart.deezer.client import Client
+from deezerart.deezer.client import Client, SearchOptions
