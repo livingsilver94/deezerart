@@ -12,7 +12,7 @@ DEEZER_PORT = 443
 
 
 T = TypeVar('T', bound=obj.Object)
-Callback = Callable[[Optional[List[T]], QNetworkReply.NetworkError], None]
+SearchCallback = Callable[[Optional[List[T]], Optional[QNetworkReply.NetworkError]], None]
 
 
 class SearchOptions(NamedTuple('SearchOptions', [('artist', str), ('album', str), ('track', str), ('label', str)])):
@@ -34,7 +34,7 @@ class Client:
         self.webservice = webservice
         self._get = partial(self.webservice.get, DEEZER_HOST, DEEZER_PORT)
 
-    def advanced_search(self, options: SearchOptions, callback: Callback[obj.Object]):
+    def advanced_search(self, options: SearchOptions, callback: SearchCallback[obj.Object]):
         path = '/search?q='
 
         def handler(document: str, _reply: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
