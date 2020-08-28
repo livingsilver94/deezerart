@@ -14,7 +14,7 @@ from picard.coverart import providers
 from picard.coverart.image import CoverArtImage
 from PyQt5.QtNetwork import QNetworkReply
 
-from deezerart.deezer import Client, SearchOptions, obj
+from .deezer import Client, SearchOptions, obj
 
 
 class Provider(providers.CoverArtProvider):

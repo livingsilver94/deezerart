@@ -1,3 +1,3 @@
-from deezerart.deezerart import PLUGIN_VERSION
+from .deezerart import PLUGIN_VERSION
 
 __version__ = PLUGIN_VERSION

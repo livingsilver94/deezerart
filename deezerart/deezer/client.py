@@ -5,7 +5,7 @@ from typing import Callable, List, NamedTuple, Optional, TypeVar
 from picard.webservice import WebService
 from PyQt5.QtNetwork import QNetworkReply
 
-from deezerart.deezer import obj
+from . import obj
 
 DEEZER_HOST = 'api.deezer.com'
 DEEZER_PORT = 443
