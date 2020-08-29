@@ -23,7 +23,7 @@ class MkpluginCommand(Command):
         for dirname, subdirs, _files in os.walk('deezerart'):
             if '__pycache__' in subdirs:
                 shutil.rmtree(os.path.join(dirname, '__pycache__'))
-        shutil.make_archive('deezerart', 'zip', root_dir='deezerart', base_dir='.')
+        shutil.make_archive('deezerart', 'zip', root_dir='.', base_dir='deezerart')
 
 
 setup(
