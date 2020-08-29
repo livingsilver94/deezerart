@@ -6,7 +6,7 @@ PLUGIN_API_VERSIONS = ['2.2', '2.3', '2.4']
 PLUGIN_LICENSE = "GPL-3.0-or-later"
 PLUGIN_LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
-from picard import providers
+from picard.coverart import providers
 
 from .provider import Provider
 
