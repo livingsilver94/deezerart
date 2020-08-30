@@ -36,7 +36,7 @@ class Client:
         self._get = partial(self.webservice.get, DEEZER_HOST, DEEZER_PORT)
 
     def advanced_search(self, options: SearchOptions, callback: SearchCallback[obj.Object]):
-        path = '/search?q='
+        path = '/search'
 
         def handler(document: QByteArray, _reply: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
             try:
@@ -46,6 +46,9 @@ class Client:
             else:
                 callback([obj.parse_json(dct) for dct in parsed_doc['data']], error)
 
-        self._get(path + str(options),
-                  handler=handler,
-                  parse_response_type=None)
+        self._get(path,
+                  queryargs={
+                      'q': str(options),
+                  },
+                  parse_response_type=None,
+                  handler=handler)
