@@ -9,7 +9,6 @@ PLUGIN_LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
 from typing import List, Optional
 
-from picard import log
 from picard.coverart import providers
 from picard.coverart.image import CoverArtImage
 from PyQt5.QtNetwork import QNetworkReply
@@ -29,12 +28,15 @@ class Provider(providers.CoverArtProvider):
     def queue_images(self):
         search_opts = SearchOptions(artist=self.metadata['artist'], album=self.metadata['musicbrainz_releasegroupid'])
         self.client.advanced_search(search_opts, self._search_callback)
+
+        self.album._requests += 1
         return self.WAIT
 
-    def _search_callback(self, results: Optional[List[obj.Object]], error: Optional[QNetworkReply.NetworkError]):
+    def _search_callback(self, results: List[obj.Object], error: Optional[QNetworkReply.NetworkError]):
+        self.album._requests -= 1
         try:
-            if error or (results is None or len(results) == 0):
-                log.error("Deezerart: could not fetch search results: %s", error or "empty list")
+            if error or len(results) == 0:
+                self.error('Deezerart: could not fetch search results: {}'.format(error or "empty list"))
                 return
             for result in results:
                 if not isinstance(result, obj.Track):
