@@ -40,7 +40,7 @@ class Client:
 
         def handler(document: QByteArray, _reply: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
             try:
-                parsed_doc = json.loads(str(document))
+                parsed_doc = json.loads(str(document, 'utf-8'))
             except json.JSONDecodeError:
                 callback([], error)
             else:
