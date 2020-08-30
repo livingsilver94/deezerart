@@ -13,7 +13,7 @@ DEEZER_PORT = 443
 
 
 T = TypeVar('T', bound=obj.Object)
-SearchCallback = Callable[[Optional[List[T]], Optional[QNetworkReply.NetworkError]], None]
+SearchCallback = Callable[[List[T], Optional[QNetworkReply.NetworkError]], None]
 
 
 class SearchOptions(NamedTuple('SearchOptions', [('artist', str), ('album', str), ('track', str), ('label', str)])):
@@ -39,11 +39,12 @@ class Client:
         path = '/search?q='
 
         def handler(document: QByteArray, _reply: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
-            if error:
-                callback(None, error)
-                return
-            parsed_doc = json.loads(str(document))
-            callback([obj.parse_json(dct) for dct in parsed_doc['data']], error)
+            try:
+                parsed_doc = json.loads(str(document))
+            except json.JSONDecodeError:
+                callback([], error)
+            else:
+                callback([obj.parse_json(dct) for dct in parsed_doc['data']], error)
 
         self._get(path + str(options),
                   handler=handler,
