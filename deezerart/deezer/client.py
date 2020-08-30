@@ -3,6 +3,7 @@ from functools import partial
 from typing import Callable, List, NamedTuple, Optional, TypeVar
 
 from picard.webservice import WebService
+from PyQt5.QtCore import QByteArray
 from PyQt5.QtNetwork import QNetworkReply
 
 from . import obj
@@ -37,11 +38,11 @@ class Client:
     def advanced_search(self, options: SearchOptions, callback: SearchCallback[obj.Object]):
         path = '/search?q='
 
-        def handler(document: str, _reply: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
+        def handler(document: QByteArray, _reply: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
             if error:
                 callback(None, error)
                 return
-            parsed_doc = json.loads(document)
+            parsed_doc = json.loads(str(document))
             callback([obj.parse_json(dct) for dct in parsed_doc['data']], error)
 
         self._get(path + str(options),
