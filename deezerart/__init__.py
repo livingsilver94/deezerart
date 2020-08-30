@@ -27,7 +27,7 @@ class Provider(providers.CoverArtProvider):
         self.client = Client(self.album.tagger.webservice)
 
     def queue_images(self):
-        search_opts = SearchOptions(title=self.metadata['artist'], album=self.metadata['musicbrainz_releasegroupid'])
+        search_opts = SearchOptions(artist=self.metadata['artist'], album=self.metadata['musicbrainz_releasegroupid'])
         self.client.advanced_search(search_opts, self._search_callback)
         return self.WAIT
 
