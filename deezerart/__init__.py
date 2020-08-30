@@ -26,7 +26,7 @@ class Provider(providers.CoverArtProvider):
         self.client = Client(self.album.tagger.webservice)
 
     def queue_images(self):
-        search_opts = SearchOptions(artist=self.metadata['artist'], album=self.metadata['musicbrainz_releasegroupid'])
+        search_opts = SearchOptions(artist=self.metadata['albumartist'], album=self.metadata['album'])
         self.client.advanced_search(search_opts, self._search_callback)
 
         self.album._requests += 1
@@ -41,8 +41,8 @@ class Provider(providers.CoverArtProvider):
             for result in results:
                 if not isinstance(result, obj.Track):
                     continue
-                album = self.metadata['musicbrainz_releasegroupid']
-                artist = self.metadata['artist']
+                artist = self.metadata['albumartist']
+                album = self.metadata['album']
                 if result.artist.name != artist and result.album.title != album:
                     continue
                 self.queue_put(CoverArtImage(result.album.cover_url(obj.CoverSize.BIG)))
