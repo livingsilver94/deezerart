@@ -38,14 +38,15 @@ class Provider(providers.CoverArtProvider):
             if error or len(results) == 0:
                 self.error('Deezerart: could not fetch search results: {}'.format(error or "empty list"))
                 return
+            artist = self.metadata['albumartist']
+            album = self.metadata['album']
             for result in results:
                 if not isinstance(result, obj.Track):
                     continue
-                artist = self.metadata['albumartist']
-                album = self.metadata['album']
                 if result.artist.name != artist and result.album.title != album:
                     continue
                 self.queue_put(CoverArtImage(result.album.cover_url(obj.CoverSize.BIG)))
+                break
         finally:
             self.next_in_queue()
 
