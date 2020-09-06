@@ -54,7 +54,7 @@ class Album(Object):
         """
         Get the album cover URL based on the size wanted.
         """
-        return '{}/?size={}'.format(self.cover, cover_size.value)
+        return '{}?size={}'.format(self.cover, cover_size.value)
 
 
 class Track(Object):
