@@ -11,12 +11,13 @@ import http.client as http
 import urllib.parse as urlparse
 from typing import List, Optional
 
-from picard import webservice
+from picard import config, webservice
 from picard.coverart import providers
 from picard.coverart.image import CoverArtImage
 from PyQt5 import QtNetwork as QtNet
 
 from .deezer import Client, SearchOptions, obj
+from .options import Ui_Form
 
 __version__ = PLUGIN_VERSION
 
@@ -29,8 +30,20 @@ def redirected_url(url: str) -> str:
     return resp.getheader('Location', default=url)
 
 
+class DeezerartOptionsPage(providers.ProviderOptions):
+    NAME = 'Deezer'
+    TITLE = 'Deezer'
+    options = [config.TextOption('settings', 'deezerart_size', obj.CoverSize.BIG)]
+    _options_ui = Ui_Form
+
+    def load(self):
+        for s in obj.CoverSize:
+            self.ui.size.addItem(str(s.name).title(), userData=s.value)
+
+
 class Provider(providers.CoverArtProvider):
     NAME = 'Deezer'
+    OPTIONS = DeezerartOptionsPage
 
     def __init__(self, coverart):
         super().__init__(coverart)
