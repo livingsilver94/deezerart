@@ -33,12 +33,16 @@ def redirected_url(url: str) -> str:
 class DeezerartOptionsPage(providers.ProviderOptions):
     NAME = 'Deezer'
     TITLE = 'Deezer'
-    options = [config.TextOption('settings', 'deezerart_size', obj.CoverSize.BIG)]
+    options = [config.TextOption('setting', 'deezerart_size', obj.CoverSize.BIG.value)]
     _options_ui = Ui_Form
 
     def load(self):
         for s in obj.CoverSize:
             self.ui.size.addItem(str(s.name).title(), userData=s.value)
+        self.ui.size.setCurrentIndex(self.ui.size.findData(config.setting['deezerart_size']))
+
+    def save(self):
+        config.setting['deezerart_size'] = self.ui.size.currentData()
 
 
 class Provider(providers.CoverArtProvider):
