@@ -73,7 +73,7 @@ class Provider(providers.CoverArtProvider):
                     continue
                 if result.artist.name != artist and result.album.title != album:
                     continue
-                redirected = redirected_url(result.album.cover_url(obj.CoverSize.BIG))
+                redirected = redirected_url(result.album.cover_url(obj.CoverSize(config.setting['deezerart_size'])))
                 self.queue_put(CoverArtImage(redirected))
                 break
         finally:
