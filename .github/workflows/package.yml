@@ -1,4 +1,4 @@
-name: Make plugin package
+name: Package
 
 on:
   push:
