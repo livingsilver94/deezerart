@@ -30,7 +30,7 @@ def redirected_url(url: str) -> str:
     return resp.getheader('Location', default=url)
 
 
-class DeezerartOptionsPage(providers.ProviderOptions):
+class OptionsPage(providers.ProviderOptions):
     NAME = 'Deezer'
     TITLE = 'Deezer'
     options = [config.TextOption('setting', 'deezerart_size', obj.CoverSize.BIG.value)]
@@ -47,7 +47,7 @@ class DeezerartOptionsPage(providers.ProviderOptions):
 
 class Provider(providers.CoverArtProvider):
     NAME = 'Deezer'
-    OPTIONS = DeezerartOptionsPage
+    OPTIONS = OptionsPage
 
     def __init__(self, coverart):
         super().__init__(coverart)
