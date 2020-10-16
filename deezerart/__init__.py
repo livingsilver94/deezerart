@@ -1,4 +1,3 @@
-
 PLUGIN_NAME = "Deezer cover art"
 PLUGIN_AUTHOR = "Fabio Forni <livingsilver94>"
 PLUGIN_DESCRIPTION = "Fetch cover arts from Deezer"
@@ -9,6 +8,7 @@ PLUGIN_LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
 import http.client as http
 import urllib.parse as urlparse
+from difflib import SequenceMatcher
 from typing import List, Optional
 
 from picard import config, webservice
@@ -28,6 +28,11 @@ def redirected_url(url: str) -> str:
     conn.request('HEAD', parsed.path + '?' + parsed.query, headers={'Connection': 'close', 'User-Agent': webservice.USER_AGENT_STRING})
     resp = conn.getresponse()
     return resp.getheader('Location', default=url)
+
+
+def is_similar(str1: str, str2: str) -> bool:
+    # Python doc considers a ratio equal to 0.6 a good match.
+    return SequenceMatcher(None, str1, str2).ratio() >= 0.65
 
 
 class OptionsPage(providers.ProviderOptions):
@@ -52,9 +57,13 @@ class Provider(providers.CoverArtProvider):
     def __init__(self, coverart):
         super().__init__(coverart)
         self.client = Client(self.album.tagger.webservice)
+        self._retry = False
 
     def queue_images(self):
-        search_opts = SearchOptions(artist=self.metadata['albumartist'], album=self.metadata['album'])
+        if not self._retry:
+            search_opts = SearchOptions(artist=self.metadata['albumartist'], album=self.metadata['album'])
+        else:
+            search_opts = SearchOptions(artist=self.metadata['albumartist'], track=self.metadata['track'])
         self.client.advanced_search(search_opts, self._search_callback)
 
         self.album._requests += 1
@@ -63,19 +72,27 @@ class Provider(providers.CoverArtProvider):
     def _search_callback(self, results: List[obj.Object], error: Optional[QtNet.QNetworkReply.NetworkError]):
         self.album._requests -= 1
         try:
-            if error or len(results) == 0:
-                self.error('Deezerart: could not fetch search results: {}'.format(error or "empty list"))
+            if error:
+                self.error('Deezerart: could not fetch search results: {}'.format(error))
+                return
+            if len(results) == 0:
+                if self._retry:
+                    self.error('Deezerart: no results found')
+                    return
+                self._retry = True
+                self.queue_images()
                 return
             artist = self.metadata['albumartist']
             album = self.metadata['album']
             for result in results:
                 if not isinstance(result, obj.Track):
                     continue
-                if result.artist.name != artist and result.album.title != album:
+                if not is_similar(result.artist.name, artist) or not is_similar(result.album.title, album):
                     continue
                 redirected = redirected_url(result.album.cover_url(obj.CoverSize(config.setting['deezerart_size'])))
                 self.queue_put(CoverArtImage(redirected))
-                break
+                return
+            self.error('Deezerart: no result matched the criteria')
         finally:
             self.next_in_queue()
 
