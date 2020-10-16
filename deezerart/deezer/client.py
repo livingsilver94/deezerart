@@ -47,8 +47,6 @@ class Client:
                 callback([obj.parse_json(dct) for dct in parsed_doc['data']], error)
 
         self._get(path,
-                  queryargs={
-                      'q': str(options),
-                  },
+                  queryargs={'q': str(options)},
                   parse_response_type=None,
                   handler=handler)
