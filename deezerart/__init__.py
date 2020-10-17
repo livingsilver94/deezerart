@@ -2,7 +2,7 @@ PLUGIN_NAME = "Deezer cover art"
 PLUGIN_AUTHOR = "Fabio Forni <livingsilver94>"
 PLUGIN_DESCRIPTION = "Fetch cover arts from Deezer"
 PLUGIN_VERSION = '1.0.0'
-PLUGIN_API_VERSIONS = ['2.2', '2.3', '2.4']
+PLUGIN_API_VERSIONS = ['2.2', '2.3', '2.4', '2.5']
 PLUGIN_LICENSE = "GPL-3.0-or-later"
 PLUGIN_LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
@@ -11,6 +11,7 @@ import urllib.parse as urlparse
 from difflib import SequenceMatcher
 from typing import List, Optional
 
+import picard
 from picard import config, webservice
 from picard.coverart import providers
 from picard.coverart.image import CoverArtImage
@@ -23,6 +24,9 @@ __version__ = PLUGIN_VERSION
 
 
 def redirected_url(url: str) -> str:
+    """
+    Find where a URL is redirecting to.
+    """
     parsed = urlparse.urlparse(url)
     conn = http.HTTPSConnection(parsed.netloc, 443) if parsed.scheme == 'https' else http.HTTPConnection(parsed.netloc, 80)
     conn.request('HEAD', parsed.path + '?' + parsed.query, headers={'Connection': 'close', 'User-Agent': webservice.USER_AGENT_STRING})
@@ -89,8 +93,12 @@ class Provider(providers.CoverArtProvider):
                     continue
                 if not is_similar(result.artist.name, artist) or not is_similar(result.album.title, album):
                     continue
-                redirected = redirected_url(result.album.cover_url(obj.CoverSize(config.setting['deezerart_size'])))
-                self.queue_put(CoverArtImage(redirected))
+                cover_url = result.album.cover_url(obj.CoverSize(config.setting['deezerart_size']))
+                if picard.PICARD_VERSION < (2, 5):
+                    # Older Picard versions are affected by: https://tickets.metabrainz.org/browse/PICARD-1976
+                    # Let's work around it by requesting the redirected URL in the main thread.
+                    cover_url = redirected_url(cover_url)
+                self.queue_put(CoverArtImage(cover_url))
                 return
             self.error('Deezerart: no result matched the criteria')
         finally:
