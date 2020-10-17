@@ -19,7 +19,7 @@
      <item>
       <widget class="QLabel" name="sizeLabel">
        <property name="text">
-        <string>Cover size</string>
+        <string>Cover size:</string>
        </property>
       </widget>
      </item>
