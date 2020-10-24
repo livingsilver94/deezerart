@@ -14,3 +14,7 @@ To create an installable .zip file, run:
 python setup.py mkplugin
 ```
 A file called `deezerart.zip` will appear in the current directory. The archive can be installed via the Plugin section of the Picard options.
+
+## Issues
+
+Due to a bug in Picard versions older that 2.5, the cover art provider does not handle HTTP redirections. A workaround is available, but this will make Picard hang a little on slow networks, and will make it crash on Windows. So if on Windows, make sure you're running the latest release.

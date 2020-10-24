@@ -97,6 +97,7 @@ class Provider(providers.CoverArtProvider):
                 if picard.PICARD_VERSION < (2, 5):
                     # Older Picard versions are affected by: https://tickets.metabrainz.org/browse/PICARD-1976
                     # Let's work around it by requesting the redirected URL in the main thread.
+                    # Note that this will make Picard crash on Windows.
                     cover_url = redirected_url(cover_url)
                 self.queue_put(CoverArtImage(cover_url))
                 return
