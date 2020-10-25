@@ -35,8 +35,10 @@ def redirected_url(url: str) -> str:
 
 
 def is_similar(str1: str, str2: str) -> bool:
+    if str1 in str2:
+        return True
     # Python doc considers a ratio equal to 0.6 a good match.
-    return SequenceMatcher(None, str1, str2).ratio() >= 0.65
+    return SequenceMatcher(None, str1, str2).quick_ratio() >= 0.65
 
 
 class OptionsPage(providers.ProviderOptions):
@@ -65,9 +67,9 @@ class Provider(providers.CoverArtProvider):
 
     def queue_images(self):
         if not self._retry:
-            search_opts = SearchOptions(artist=self.metadata['albumartist'], album=self.metadata['album'])
+            search_opts = SearchOptions(artist=self._artist(), album=self.metadata['album'])
         else:
-            search_opts = SearchOptions(artist=self.metadata['albumartist'], track=self.metadata['track'])
+            search_opts = SearchOptions(artist=self._artist(), track=self.metadata['track'])
         self.client.advanced_search(search_opts, self._search_callback)
 
         self.album._requests += 1
@@ -86,12 +88,12 @@ class Provider(providers.CoverArtProvider):
                 self._retry = True
                 self.queue_images()
                 return
-            artist = self.metadata['albumartist']
+            artist = self._artist()
             album = self.metadata['album']
             for result in results:
                 if not isinstance(result, obj.Track):
                     continue
-                if not is_similar(result.artist.name, artist) or not is_similar(result.album.title, album):
+                if not is_similar(artist, result.artist.name) or not is_similar(album, result.album.title):
                     continue
                 cover_url = result.album.cover_url(obj.CoverSize(config.setting['deezerart_size']))
                 if picard.PICARD_VERSION < (2, 5):
@@ -104,6 +106,13 @@ class Provider(providers.CoverArtProvider):
             self.error('Deezerart: no result matched the criteria')
         finally:
             self.next_in_queue()
+
+    def _artist(self) -> str:
+        # If there are many artists, we want to search
+        # the album in Deezer with just one as keyword.
+        # Deezerart may not specify all the artists
+        # MusicBrainz does, or it may use different separators.
+        return self.metadata.getraw('~albumartists')[0]
 
 
 providers.register_cover_art_provider(Provider)
