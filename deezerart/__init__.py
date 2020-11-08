@@ -68,9 +68,17 @@ class Provider(providers.CoverArtProvider):
     def queue_images(self):
         if not self._retry:
             search_opts = SearchOptions(artist=self._artist(), album=self.metadata['album'])
+            self.client.advanced_search(search_opts, self._search_callback)
         else:
-            search_opts = SearchOptions(artist=self._artist(), track=self.metadata['track'])
-        self.client.advanced_search(search_opts, self._search_callback)
+            # Search with the second track of the album.
+            # Sometimes, the first track is generically named ("ouverture", "prelude"...)
+            # so it's unlikely that track is unique for a given artist.
+            def search_deezer():
+                search_opts = SearchOptions(artist=self._artist(), track=self.album.tracks[1])
+                self.client.advanced_search(search_opts, self._search_callback)
+                print("YES!")
+            self.album.run_when_loaded(search_deezer)
+            self.album.load(priority=True)
 
         self.album._requests += 1
         return self.WAIT
