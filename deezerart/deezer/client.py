@@ -1,6 +1,7 @@
 import json
 from functools import partial
 from typing import Callable, List, NamedTuple, Optional, TypeVar
+from urllib.parse import urlsplit, urlunsplit
 
 from picard.webservice import WebService
 from PyQt5.QtCore import QByteArray
@@ -50,3 +51,23 @@ class Client:
                   queryargs={'q': str(options)},
                   parse_response_type=None,
                   handler=handler)
+
+    @staticmethod
+    def api_url(url: str) -> str:
+        parsed = urlsplit(url)
+        path = Client._remove_language_path(parsed.path)
+        return urlunsplit((parsed.scheme, DEEZER_HOST, path, parsed.query, parsed.fragment))
+
+    def obj_from_url(self, url: str, callback: Callable[[obj.Object, Optional[QNetworkReply.NetworkError]], None]):
+        self._get(self.api_url(url),
+                  parse_response_type=None,
+                  handler=None)
+
+    @staticmethod
+    def _remove_language_path(path: str) -> str:
+        # Deezer has a 2-letter language path, e.g. /us/track/123.
+        lang_len = 2
+        paths = path[1:].split('/', maxsplit=1)
+        if len(paths[0]) == lang_len:
+            return path[lang_len + 1:]
+        return path
