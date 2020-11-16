@@ -62,7 +62,7 @@ class Client:
             finally:
                 callback(deezer_obj, error)
 
-        self._get(self.api_url(url),
+        self._get(self._remove_language_path(urlsplit(url).path),
                   parse_response_type=None,
                   handler=handler)
 
