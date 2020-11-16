@@ -7,9 +7,9 @@ PLUGIN_LICENSE = "GPL-3.0-or-later"
 PLUGIN_LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
 import http.client as http
-import urllib.parse as urlparse
 from difflib import SequenceMatcher
 from typing import List, Optional
+from urllib.parse import urlsplit
 
 import picard
 from picard import config, webservice
@@ -27,7 +27,7 @@ def redirected_url(url: str) -> str:
     """
     Find where a URL is redirecting to.
     """
-    parsed = urlparse.urlparse(url)
+    parsed = urlsplit(url)
     conn = http.HTTPSConnection(parsed.netloc, 443) if parsed.scheme == 'https' else http.HTTPConnection(parsed.netloc, 80)
     conn.request('HEAD', parsed.path + '?' + parsed.query, headers={'Connection': 'close', 'User-Agent': webservice.USER_AGENT_STRING})
     resp = conn.getresponse()
@@ -39,6 +39,10 @@ def is_similar(str1: str, str2: str) -> bool:
         return True
     # Python doc considers a ratio equal to 0.6 a good match.
     return SequenceMatcher(None, str1, str2).quick_ratio() >= 0.65
+
+
+def is_deezer_url(url: str) -> bool:
+    return 'deezer.com' in urlsplit(url).netloc
 
 
 class OptionsPage(providers.ProviderOptions):
@@ -63,29 +67,53 @@ class Provider(providers.CoverArtProvider):
     def __init__(self, coverart):
         super().__init__(coverart)
         self.client = Client(self.album.tagger.webservice)
-        self._retry = False
+        self._has_url_relation = False
+        self._retry_search = False
 
     def queue_images(self):
-        if not self._retry:
-            search_opts = SearchOptions(artist=self._artist(), album=self.metadata['album'])
-        else:
-            search_opts = SearchOptions(artist=self._artist(), track=self.metadata['track'])
-        self.client.advanced_search(search_opts, self._search_callback)
-
+        self.match_url_relations(['free streaming'], self._url_callback)
+        if not self._has_url_relation:
+            if not self._retry_search:
+                search_opts = SearchOptions(artist=self._artist(), album=self.metadata['album'])
+            else:
+                search_opts = SearchOptions(artist=self._artist(), track=self.metadata['track'])
+            self.client.advanced_search(search_opts, self._search_callback)
         self.album._requests += 1
         return self.WAIT
+
+    def error(self, msg):
+        super().error('Deezerart: ' + msg)
+
+    def _url_callback(self, url: str):
+        if is_deezer_url(url):
+            self._has_url_relation = True
+            self.client.obj_from_url(url, self._queue_from_url)
+
+    def _queue_from_url(self, album: obj.Object, error: QtNet.QNetworkReply.NetworkError):
+        self.album._requests -= 1
+        try:
+            if error:
+                self.error('could not get Deezer API object: {}'.format(error))
+                return
+            if not isinstance(album, obj.Album):
+                self.error('API object is not an album')
+                return
+            cover_url = album.cover_url(obj.CoverSize(config.setting['deezerart_size']))
+            self.queue_put(CoverArtImage(cover_url))
+        finally:
+            self.next_in_queue()
 
     def _search_callback(self, results: List[obj.Object], error: Optional[QtNet.QNetworkReply.NetworkError]):
         self.album._requests -= 1
         try:
             if error:
-                self.error('Deezerart: could not fetch search results: {}'.format(error))
+                self.error('could not fetch search results: {}'.format(error))
                 return
             if len(results) == 0:
-                if self._retry:
-                    self.error('Deezerart: no results found')
+                if self._retry_search:
+                    self.error('no results found')
                     return
-                self._retry = True
+                self._retry_search = True
                 self.queue_images()
                 return
             artist = self._artist()
@@ -103,7 +131,7 @@ class Provider(providers.CoverArtProvider):
                     cover_url = redirected_url(cover_url)
                 self.queue_put(CoverArtImage(cover_url))
                 return
-            self.error('Deezerart: no result matched the criteria')
+            self.error('no result matched the criteria')
         finally:
             self.next_in_queue()
 
