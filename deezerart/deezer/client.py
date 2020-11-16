@@ -15,6 +15,7 @@ DEEZER_PORT = 443
 
 T = TypeVar('T', bound=obj.Object)
 SearchCallback = Callable[[List[T], Optional[QNetworkReply.NetworkError]], None]
+APIURLCallback = Callable[[Optional[T], Optional[QNetworkReply.NetworkError]], None]
 
 
 class SearchOptions(NamedTuple('SearchOptions', [('artist', str), ('album', str), ('track', str), ('label', str)])):
@@ -39,7 +40,7 @@ class Client:
     def advanced_search(self, options: SearchOptions, callback: SearchCallback[obj.Object]):
         path = '/search'
 
-        def handler(document: QByteArray, _reply: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
+        def handler(document: QByteArray, _: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
             try:
                 parsed_doc = json.loads(str(document, 'utf-8'))
             except json.JSONDecodeError:
@@ -52,9 +53,14 @@ class Client:
                   parse_response_type=None,
                   handler=handler)
 
-    def obj_from_url(self, url: str, callback: Callable[[obj.Object, Optional[QNetworkReply.NetworkError]], None]):
-        def handler(document: QByteArray, _reply: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
-            callback(obj.parse_json(document), error)
+    def obj_from_url(self, url: str, callback: APIURLCallback[obj.Object]):
+        def handler(document: QByteArray, _: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
+            try:
+                deezer_obj = obj.parse_json(str(document, 'utf-8'))
+            except json.JSONDecodeError:
+                deezer_obj = None
+            finally:
+                callback(deezer_obj, error)
 
         self._get(self.api_url(url),
                   parse_response_type=None,
