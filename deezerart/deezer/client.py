@@ -52,16 +52,19 @@ class Client:
                   parse_response_type=None,
                   handler=handler)
 
+    def obj_from_url(self, url: str, callback: Callable[[obj.Object, Optional[QNetworkReply.NetworkError]], None]):
+        def handler(document: QByteArray, _reply: QNetworkReply, error: Optional[QNetworkReply.NetworkError]):
+            callback(obj.parse_json(document), error)
+
+        self._get(self.api_url(url),
+                  parse_response_type=None,
+                  handler=handler)
+
     @staticmethod
     def api_url(url: str) -> str:
         parsed = urlsplit(url)
         path = Client._remove_language_path(parsed.path)
         return urlunsplit((parsed.scheme, DEEZER_HOST, path, parsed.query, parsed.fragment))
-
-    def obj_from_url(self, url: str, callback: Callable[[obj.Object, Optional[QNetworkReply.NetworkError]], None]):
-        self._get(self.api_url(url),
-                  parse_response_type=None,
-                  handler=None)
 
     @staticmethod
     def _remove_language_path(path: str) -> str:
