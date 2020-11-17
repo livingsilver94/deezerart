@@ -78,7 +78,13 @@ class Provider(providers.CoverArtProvider):
             if not self._retry_search:
                 search_opts = SearchOptions(artist=self._artist(), album=self.metadata['album'])
             else:
-                search_opts = SearchOptions(artist=self._artist(), track=self.metadata['track'])
+                try:
+                    track = self.release['media'][0]['tracks'][1]['title']
+                except (IndexError, KeyError):
+                    self.error('cannot find a track to perform a search. No conver found')
+                    return self.FINISHED
+                else:
+                    search_opts = SearchOptions(artist=self._artist(), track=track)
             self.client.advanced_search(search_opts, self._search_callback)
         self.album._requests += 1
         return self.WAIT
