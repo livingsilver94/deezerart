@@ -1,6 +1,6 @@
 import enum
 import json
-from typing import Any, List, Mapping, Union
+from typing import Any, List, Mapping, Optional, Union
 
 # This module is a perfect target for dataclasses.
 # Picard though supports Python 3.5+, so we cannot
@@ -48,6 +48,10 @@ class CoverSize(enum.Enum):
 
 
 class Album(Object):
+    """
+    The Album API object.
+    """
+
     fields = ['title', 'cover']
 
     def cover_url(self, cover_size: CoverSize) -> str:
@@ -86,5 +90,11 @@ def parse_json(data: Union[str, Mapping[str, Any]]) -> Object:
     return _dict_to_object(data)
 
 
-def _dict_to_object(data: Mapping[str, Any]) -> Object:
-    return available_objects[data['type']](**data)
+def _dict_to_object(data: Mapping[str, Any]) -> Optional[Object]:
+    obj_type = data.get('type')
+    if obj_type is None:
+        return None
+    obj_class = available_objects.get(obj_type)
+    if obj_class is None:
+        return None
+    return obj_class(**data)
