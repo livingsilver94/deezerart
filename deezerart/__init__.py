@@ -88,7 +88,7 @@ class Provider(providers.CoverArtProvider):
         super().error(self._log_prefix + msg)
 
     def log_debug(self, msg: Any):
-        picard.log.debug('%s %s', self._log_prefix, msg)
+        picard.log.debug('%s%s', self._log_prefix, msg)
 
     def _url_callback(self, url: str):
         if is_deezer_url(url):
