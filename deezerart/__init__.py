@@ -8,7 +8,7 @@ PLUGIN_LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
 import http.client as http
 from difflib import SequenceMatcher
-from typing import List, Optional
+from typing import Any, List, Optional
 from urllib.parse import urlsplit
 
 import picard
@@ -63,6 +63,7 @@ class OptionsPage(providers.ProviderOptions):
 class Provider(providers.CoverArtProvider):
     NAME = 'Deezer'
     OPTIONS = OptionsPage
+    _log_prefix = 'Deezerart: '
 
     def __init__(self, coverart):
         super().__init__(coverart)
@@ -70,6 +71,7 @@ class Provider(providers.CoverArtProvider):
         self._has_url_relation = False
         self._retry_search = False
 
+    # Override.
     def queue_images(self):
         self.match_url_relations(['free streaming'], self._url_callback)
         if not self._has_url_relation:
@@ -81,8 +83,12 @@ class Provider(providers.CoverArtProvider):
         self.album._requests += 1
         return self.WAIT
 
+    # Override.
     def error(self, msg):
-        super().error('Deezerart: ' + msg)
+        super().error(self._log_prefix + msg)
+
+    def log_debug(self, msg: Any):
+        picard.log.debug('%s %s', self._log_prefix, msg)
 
     def _url_callback(self, url: str):
         if is_deezer_url(url):
@@ -100,6 +106,7 @@ class Provider(providers.CoverArtProvider):
                 return
             cover_url = album.cover_url(obj.CoverSize(config.setting['deezerart_size']))
             self.queue_put(CoverArtImage(cover_url))
+            self.log_debug('queued cover using an URL relation')
         finally:
             self.next_in_queue()
 
@@ -130,6 +137,7 @@ class Provider(providers.CoverArtProvider):
                     # Note that this will make Picard crash on Windows.
                     cover_url = redirected_url(cover_url)
                 self.queue_put(CoverArtImage(cover_url))
+                self.log_debug('queued cover using a Deezer search')
                 return
             self.error('no result matched the criteria')
         finally:
