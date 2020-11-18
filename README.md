@@ -7,6 +7,8 @@ Deezer provides free-to-use web APIs and good quality album covers, up to 1000ти
 
 Deezerart is thoroughly tested against multiple Python versions, spanning from 3.5 to 3.8, to ensure proper compatibility across the majority of operating systems supported by Picard.
 
+Big thanks to [phw](https://github.com/phw/) for the development support.
+
 ## Build
 
 To create an installable .zip file, run:
