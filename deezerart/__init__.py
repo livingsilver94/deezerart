@@ -81,11 +81,11 @@ class Provider(providers.CoverArtProvider):
                 try:
                     track = self.release['media'][0]['tracks'][1]['title']
                 except (IndexError, KeyError):
-                    self.error('cannot find a track to perform a search. No conver found')
+                    self.error('cannot find a track name to retry a search. No cover found')
                     return self.FINISHED
                 else:
                     search_opts = SearchOptions(artist=self._artist(), track=track)
-            self.client.advanced_search(search_opts, self._search_callback)
+            self.client.advanced_search(search_opts, self._queue_from_search)
         self.album._requests += 1
         return self.WAIT
 
@@ -116,7 +116,7 @@ class Provider(providers.CoverArtProvider):
         finally:
             self.next_in_queue()
 
-    def _search_callback(self, results: List[obj.Object], error: Optional[QtNet.QNetworkReply.NetworkError]):
+    def _queue_from_search(self, results: List[obj.Object], error: Optional[QtNet.QNetworkReply.NetworkError]):
         self.album._requests -= 1
         try:
             if error:
