@@ -11,7 +11,6 @@ class Object:
     """
     Base class from Deezer API objects.
     """
-
     fields = []  # type: List[str]
 
     def __init__(self, **kwargs):
@@ -31,7 +30,6 @@ class Artist(Object):
     """
     The Artist API object.
     """
-
     fields = ['name']
 
 
@@ -39,7 +37,6 @@ class CoverSize(enum.Enum):
     """
     Cover size selector.
     """
-
     THUMBNAIL = 'small'
     SMALL = ''
     MEDIUM = 'medium'
@@ -51,7 +48,6 @@ class Album(Object):
     """
     The Album API object.
     """
-
     fields = ['title', 'cover']
 
     def cover_url(self, cover_size: CoverSize) -> str:
@@ -65,7 +61,6 @@ class Track(Object):
     """
     The Track API object.
     """
-
     fields = ['album', 'artist']
 
 
@@ -81,7 +76,7 @@ def parse_json(data: Union[str, Mapping[str, Any]]) -> Object:
         Traverse the dictionaries with post-order
         algorithm to convert dict objects in Object instances.
         """
-        for k, v in list(data.items()):
+        for k, v in data.items():
             if isinstance(v, dict):
                 data[k] = convert_inner(v)
         return _dict_to_object(data)
@@ -91,10 +86,10 @@ def parse_json(data: Union[str, Mapping[str, Any]]) -> Object:
 
 
 def _dict_to_object(data: Mapping[str, Any]) -> Optional[Object]:
-    obj_type = data.get('type')
-    if obj_type is None:
+    try:
+        obj_type = data['type']
+        obj_class = available_objects[obj_type]
+    except KeyError:
         return None
-    obj_class = available_objects.get(obj_type)
-    if obj_class is None:
-        return None
-    return obj_class(**data)
+    else:
+        return obj_class(**data)

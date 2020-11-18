@@ -77,6 +77,4 @@ class Client:
         # Deezer has a 2-letter language path, e.g. /us/track/123.
         lang_len = 2
         paths = path[1:].split('/', maxsplit=1)
-        if len(paths[0]) == lang_len:
-            return path[lang_len + 1:]
-        return path
+        return path[lang_len + 1:] if len(paths[0]) == lang_len else path
