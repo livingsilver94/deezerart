@@ -101,7 +101,7 @@ class Provider(providers.CoverArtProvider):
             self._has_url_relation = True
             self.client.obj_from_url(url, self._queue_from_url)
 
-    def _queue_from_url(self, album: obj.Object, error: QtNet.QNetworkReply.NetworkError):
+    def _queue_from_url(self, album: obj.APIObject, error: QtNet.QNetworkReply.NetworkError):
         self.album._requests -= 1
         try:
             if error:
@@ -116,7 +116,7 @@ class Provider(providers.CoverArtProvider):
         finally:
             self.next_in_queue()
 
-    def _queue_from_search(self, results: List[obj.Object], error: Optional[QtNet.QNetworkReply.NetworkError]):
+    def _queue_from_search(self, results: List[obj.APIObject], error: Optional[QtNet.QNetworkReply.NetworkError]):
         self.album._requests -= 1
         try:
             if error:
