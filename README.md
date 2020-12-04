@@ -1,6 +1,6 @@
 # Deezerart
 
-![Tests](https://github.com/livingsilver94/deezerart/workflows/Tests/badge.svg) ![Package](https://github.com/livingsilver94/deezerart/workflows/Package/badge.svg) ![Picard official plugin](https://img.shields.io/badge/Picard-official-blue) ![License](https://img.shields.io/github/license/livingsilver94/deezerart?label=License)
+![Tests](https://github.com/livingsilver94/deezerart/workflows/Tests/badge.svg) ![Package](https://github.com/livingsilver94/deezerart/workflows/Package/badge.svg) [![Foo](https://img.shields.io/badge/Picard-official-blue)](https://github.com/metabrainz/picard-plugins/tree/2.0/plugins/deezerart) ![License](https://img.shields.io/github/license/livingsilver94/deezerart?label=License)
 
 Deezerart is a [MusicBrainz Picard](https://picard.musicbrainz.org) plugin that fetches album covers from [Deezer](https://www.deezer.com).\
 Deezer provides free-to-use web APIs and good quality album covers, up to 1000⨯1000 pixels, proving itself to be superior to the other cover providers Picard currently supports.
